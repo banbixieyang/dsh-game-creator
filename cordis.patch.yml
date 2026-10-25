@@ -1,0 +1,126 @@
+# 「游戏制作模式」— a single declarative Agent preset for DSH >= 0.1.7-rc.2.
+# Installed with `plugin_manager` action `install_bundle`; the Loader row id is
+# `preset-game-creator`, the preset identity is `game-creator`.
+#
+# The Godot MCP client is declared ONLY inside this preset's plugin list. Preset
+# plugins live in their own Cordis scope, so `mcp__godot__*` tools exist only for
+# Agents that selected this preset; standard / ptc / minimal / cordis never load
+# the row and therefore never see the tools.
+- insert:
+    - id: preset-game-creator
+      name: '@deepseek-ai/dsh-agent-preset'
+      config:
+        id: game-creator
+        name: 游戏制作模式
+        description: 通过 Godot AI MCP 驱动 Godot 4.7.2 编辑器制作游戏
+        order: 5
+        plugins:
+          - id: persona
+            name: '@deepseek-ai/dsh-persona'
+            config:
+              prefix: |-
+                你是「游戏制作模式」的 Godot 游戏开发专家，通过 Godot AI MCP 工具（mcp__godot__*）直接操作当前打开的 Godot 4.7.2 编辑器：读取场景树、创建节点、写 GDScript、改属性、连信号、保存场景、运行项目。
+
+                项目入口：Godot MCP 只能操作“已经在编辑器里打开”的项目。如果还没有对应会话，先用 godot_new_project 新建项目（自带 Godot AI 插件并自动开编辑器），或用 godot_open_project 打开已有项目；然后用 mcp__godot__session_manage 确认会话出现并 session_activate 选中它。多个项目同时打开时必须先选定目标，不要跳过这一步直接改场景。
+
+                工作方式：
+                1. 先读后写。动手前先用 Godot 工具读取项目信息、当前场景树与目标脚本；确认编辑器连接正常（工具不可用时先诊断：Godot 是否打开目标项目、Godot AI 插件是否启用、127.0.0.1:8000 是否可达）。绝不凭猜测写入。
+                2. 小批量修改。一次只完成一组相关变更（建节点 / 写脚本 / 连信号 / 调属性），每批写完立即回读确认，再进入下一批。
+                3. 使用 Godot 4 语法：@onready、@export、@tool、signal、await、func _ready() -> void；不要使用 Godot 3 的写法（yield、onready 无 @、export var 等）。
+                4. 项目内路径统一用 res://；场景保存为 .tscn，脚本保存为 .gd，并保持场景与脚本的 UID 关系不被破坏。
+                5. 完成后必须运行验证：运行项目、读取输出与错误日志；有报错先修复再报告，不要跳过验证。无法验证时明确说明原因。
+                6. 不覆盖用户已有场景和脚本；修改前先读取原文，改动尽量小且可回滚。
+
+                回答用中文；报告结果时列出改动过的文件/节点，以及验证结论。
+              # No suffix: persona templates only resolve registered variables
+              # (provider, model here). The working directory already arrives
+              # through the runtime context, so a {{cwd}} suffix fails rendering.
+          - id: agent-instructions
+            name: '@deepseek-ai/dsh-agent-instructions'
+            config:
+              maxBytes: 65536
+          - id: time-context
+            name: '@deepseek-ai/dsh-time-context'
+          - id: tool-bash
+            name: '@deepseek-ai/dsh-tool-bash'
+            disabled: !!js process.platform === 'win32'
+          - id: tool-pwsh
+            name: '@deepseek-ai/dsh-tool-pwsh'
+            disabled: !!js process.platform !== 'win32'
+          - id: tool-fs
+            name: '@deepseek-ai/dsh-tool-fs'
+          - id: tool-fs-search
+            name: '@deepseek-ai/dsh-tool-fs-search'
+            config:
+              sampleOverCapGlobResults: false
+          - id: tool-jobs
+            name: '@deepseek-ai/dsh-tool-jobs'
+          - id: tool-todo
+            name: '@deepseek-ai/dsh-tool-todo'
+            config:
+              allowParallelInProgress: true
+          - id: tool-web
+            name: '@deepseek-ai/dsh-tool-web'
+            config:
+              fetch: true
+              searchTimeoutMs: 60000
+          - id: compaction
+            name: cordis:group
+            group: true
+            isolate:
+              compaction: true
+              toolResultPruner: true
+            config:
+              - id: compaction-basic
+                name: '@deepseek-ai/dsh-compaction-basic'
+              - id: command-compact
+                name: '@deepseek-ai/dsh-command-compact'
+              - id: tool-result-pruner
+                name: '@deepseek-ai/dsh-compaction-tool-result-pruner'
+                config:
+                  thresholdChars: 8192
+                  headChars: 4096
+                  tailChars: 1024
+          # The only Godot capability source. The Godot AI addon owns a backend
+          # on 127.0.0.1:8000 (MCP) + 9500 (editor WebSocket); this stdio bridge
+          # attaches to it. stdio is used instead of the raw HTTP endpoint
+          # because that endpoint requires the per-launch bearer capability in
+          # %LOCALAPPDATA%\godot-ai\capabilities, which a static config cannot
+          # carry across backend restarts. The bridge reads that record itself.
+          - id: godot-mcp
+            name: '@deepseek-ai/dsh-mcp-client'
+            config:
+              serverName: godot
+              transport: stdio
+              command: C:\Users\lenovo\.local\bin\uvx.exe
+              args:
+                - --from
+                - godot-ai==4.2.3
+                - godot-ai
+                - attach
+                - --port
+                - '8000'
+                - --ws-port
+                - '9500'
+              toolCallTimeoutMs: 120000
+              # Godot may be closed when the preset activates; keep the preset
+              # usable and let the reconnect loop attach once the editor is up.
+              failOnStartupError: false
+              reconnect:
+                enabled: true
+                initialDelayMs: 1000
+                maxDelayMs: 30000
+                maxAttempts: 60
+          # The Godot MCP surface can only drive a project that is already open
+          # in an editor. These two tools cover the missing step: scaffold a
+          # project (addon included), make sure the backend runs, and launch the
+          # editor so it registers a session.
+          #
+          # godotExe / uvxPath are optional: without them the tools look for a
+          # Godot executable and uvx on PATH (override with GODOT_BIN). Set them
+          # here when Godot lives somewhere unusual.
+          - id: game-creator-tools
+            name: 'dsh-game-creator/tools'
+            config:
+              httpPort: 8000
+              wsPort: 9500

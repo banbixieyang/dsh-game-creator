@@ -1,0 +1,43 @@
+{
+  "name": "dsh-game-creator",
+  "version": "1.0.0",
+  "description": "「游戏制作模式」— a DeepSeek Harness agent preset that builds Godot 4.7 games through the Godot AI MCP bridge, and can scaffold or open Godot projects.",
+  "type": "module",
+  "main": "./tools.js",
+  "exports": {
+    ".": "./tools.js",
+    "./tools": "./tools.js"
+  },
+  "files": [
+    "tools.js",
+    "cordis.patch.yml",
+    "vendor/godot_ai",
+    "README.md",
+    "DESIGN.md",
+    "LICENSE"
+  ],
+  "keywords": [
+    "deepseek-harness",
+    "dsh",
+    "dsh-plugin",
+    "godot",
+    "game-development",
+    "agent-preset",
+    "mcp"
+  ],
+  "homepage": "https://github.com/banbixieyang/dsh-game-creator#readme",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/banbixieyang/dsh-game-creator.git"
+  },
+  "license": "MIT",
+  "engines": {
+    "node": "^22.19.0 || >=24.0.0",
+    "dsh": ">=0.2.1-rc.2 <0.3.0"
+  },
+  "dsh": {
+    "bundle": {
+      "patch": "./cordis.patch.yml"
+    }
+  }
+}
