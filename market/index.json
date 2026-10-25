@@ -1,0 +1,74 @@
+{
+  "format": 1,
+  "title": {
+    "en": "DSH Game Creator",
+    "zh": "游戏制作模式"
+  },
+  "description": {
+    "en": "Agent presets for DeepSeek Harness that build games in a live Godot editor.",
+    "zh": "面向 DeepSeek Harness 的游戏制作类 Agent 预设。"
+  },
+  "metadata": {
+    "categories": {
+      "game": {
+        "title": {
+          "en": "Game development",
+          "zh": "游戏开发"
+        }
+      }
+    },
+    "labels": {
+      "godot": {
+        "title": {
+          "en": "Godot",
+          "zh": "Godot"
+        }
+      }
+    }
+  },
+  "plugins": [
+    {
+      "name": "dsh-game-creator",
+      "title": {
+        "en": "Game Creator",
+        "zh": "游戏制作模式"
+      },
+      "description": {
+        "en": "A preset that drives a live Godot 4.7 editor over the Godot AI MCP bridge: scenes, nodes, GDScript, signals, running and verifying. Godot tools exist only inside this preset. Bundles the Godot AI addon and can scaffold or open projects.",
+        "zh": "通过 Godot AI MCP 驱动正在运行的 Godot 4.7 编辑器：场景、节点、GDScript、信号、运行与验证。Godot 工具只在该预设内可见。内置 Godot AI 插件，可直接新建或打开项目。"
+      },
+      "author": "banbixieyang",
+      "homepage": "https://github.com/banbixieyang/dsh-game-creator#readme",
+      "repository": {
+        "url": "https://github.com/banbixieyang/dsh-game-creator"
+      },
+      "metadata": {
+        "category": "game",
+        "keywords": [
+          "godot",
+          "game",
+          "mcp",
+          "preset",
+          "gamedev"
+        ],
+        "labels": [
+          "godot"
+        ]
+      },
+      "versions": [
+        {
+          "version": "1.0.0",
+          "publishTimestamp": 1761381600,
+          "source": {
+            "type": "git",
+            "url": "https://github.com/banbixieyang/dsh-game-creator",
+            "commit": "16785d612f7f298fb75fefc2aad399bf9ee35834"
+          },
+          "engines": {
+            "dsh": ">=0.2.1-rc.2 <0.3.0"
+          }
+        }
+      ]
+    }
+  ]
+}
